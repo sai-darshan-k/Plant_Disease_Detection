@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kissan 4.0 - Plant Disease Detection</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --primary-dark: #388E3C;
+            --secondary-color: #8BC34A;
+            --accent-color: #FFC107;
+            --text-color: #333;
+            --background-light: #f5f5f5;
+            --background-white: #ffffff;
+            --danger-color: #f44336;
+            --success-color: #4CAF50;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--background-light);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 0;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .logo i {
+            font-size: 2rem;
+        }
+        
+        h1 {
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        main {
+            margin-top: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        
+        .app-description {
+            background-color: var(--background-white);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .upload-section {
+            background-color: var(--background-white);
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .upload-container {
+            border: 2px dashed var(--secondary-color);
+            border-radius: 8px;
+            padding: 3rem 2rem;
+            margin: 1.5rem 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-container:hover {
+            border-color: var(--primary-color);
+            background-color: rgba(76, 175, 80, 0.05);
+        }
+        
+        .upload-container i {
+            font-size: 3rem;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .upload-title {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .upload-subtitle {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin: 0 0.5rem; /* Add spacing between buttons */
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .preview-container {
+            display: none;
+            margin-top: 1.5rem;
+        }
+        
+        .preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        
+        .camera-container {
+            display: none;
+            margin-top: 1.5rem;
+        }
+        
+        .camera-preview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        
+        .result-section {
+            display: none;
+            background-color: var(--background-white);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-top: 1.5rem;
+        }
+        
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .result-icon {
+            font-size: 2rem;
+            color: var(--primary-color);
+        }
+        
+        .result-title {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+        }
+        
+        .confidence-meter {
+            background-color: #e0e0e0;
+            height: 8px;
+            border-radius: 4px;
+            margin: 0.5rem 0 1.5rem;
+            overflow: hidden;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background-color: var(--primary-color);
+            width: 0;
+            transition: width 1s ease-in-out;
+        }
+        
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            align-items: stretch;
+        }
+        
+        .info-card {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 1.5rem;
+            border-left: 4px solid var(--secondary-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 150px;
+        }
+        
+        .info-card-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            color: var(--primary-dark);
+        }
+        
+        .info-card p {
+            flex-grow: 1;
+            margin: 0;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .error-message {
+            color: var(--danger-color);
+            padding: 1rem;
+            background-color: rgba(244, 67, 54, 0.1);
+            border-radius: 4px;
+            margin-top: 1rem;
+            display: none;
+        }
+        
+        footer {
+            margin-top: 3rem;
+            background-color: var(--primary-dark);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        @media (max-width: 1024px) {
+            .result-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .upload-container {
+                padding: 2rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-leaf"></i>
+                <h1>Kissan 4.0</h1>
+            </div>
+            <p class="subtitle">Plant Disease Detection</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <main>
+            <section class="app-description">
+                <h2>How It Works</h2>
+                <p>Our AI-powered tool, part of Kissan 4.0, helps you identify plant diseases from images. Simply upload a photo or capture one in real-time, and we'll analyze it to detect potential diseases and provide organic treatment recommendations.</p>
+                <p>This tool can identify 38 different types of plant diseases across various crops including apple, blueberry, cherry, corn, grape, orange, peach, pepper, potato, raspberry, soybean, squash, strawberry, and tomato.</p>
+            </section>
+            
+            <section class="upload-section">
+                <h2>Upload or Capture Your Plant Image</h2>
+                
+                <div id="uploadContainer" class="upload-container">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h3 class="upload-title">Drag & Drop, Upload, or Click Photo</h3>
+                    <p class="upload-subtitle">Supported formats: JPG, JPEG, PNG (Max size: 16MB)</p>
+                    <button class="btn" id="selectFileBtn">Select Image</button>
+                    <button class="btn" id="clickPhotoBtn">Click Photo</button>
+                </div>
+                
+                <input type="file" id="fileInput" class="file-input" accept=".jpg,.jpeg,.png">
+                
+                <div id="previewContainer" class="preview-container">
+                    <h3>Image Preview</h3>
+                    <img id="previewImage" class="preview-image" src="" alt="Plant image preview">
+                    <div style="margin-top: 1rem;">
+                        <button class="btn" id="analyzeBtn">Analyze Image</button>
+                        <button class="btn btn-secondary" id="uploadNewBtn">Upload New Image</button>
+                    </div>
+                </div>
+                
+                <div id="cameraContainer" class="camera-container">
+                    <h3>Camera Preview</h3>
+                    <video id="cameraPreview" class="camera-preview" autoplay></video>
+                    <div style="margin-top: 1rem;">
+                        <button class="btn" id="captureBtn">Capture Photo</button>
+                        <button class="btn btn-secondary" id="cancelCameraBtn">Cancel</button>
+                    </div>
+                </div>
+                
+                <div id="loadingContainer" class="loading">
+                    <div class="spinner"></div>
+                    <p>Analyzing your plant image...</p>
+                </div>
+                
+                <div id="errorMessage" class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="errorText">An error occurred. Please try again.</span>
+                </div>
+            </section>
+            
+            <section id="resultSection" class="result-section">
+                <div class="result-header">
+                    <i class="fas fa-leaf result-icon"></i>
+                    <h2 class="result-title">Analysis Results</h2>
+                </div>
+                
+                <div>
+                    <h3 id="diseaseName">Disease Name</h3>
+                    <p>Confidence: <span id="confidenceValue">0</span>%</p>
+                    <div class="confidence-meter">
+                        <div id="confidenceFill" class="confidence-fill"></div>
+                    </div>
+                </div>
+                
+                <div class="result-grid">
+                    <div class="info-card">
+                        <div class="info-card-title">
+                            <i class="fas fa-search"></i>
+                            <span>Symptoms</span>
+                        </div>
+                        <p id="symptoms">Symptoms information will appear here.</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <div class="info-card-title">
+                            <i class="fas fa-prescription-bottle-alt"></i>
+                            <span>Organic Treatment</span>
+                        </div>
+                        <p id="organicCure">Organic treatment information will appear here.</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <div class="info-card-title">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Prevention Tips</span>
+                        </div>
+                        <p id="preventionTips">Prevention tips will appear here.</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <div class="info-card-title">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Seasonal Risk</span>
+                        </div>
+                        <p id="seasonalRisk">Seasonal risk information will appear here.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>© 2025 Kissan 4.0 - Plant Disease Detection Tool. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadContainer = document.getElementById('uploadContainer');
+    const fileInput = document.getElementById('fileInput');
+    const selectFileBtn = document.getElementById('selectFileBtn');
+    const clickPhotoBtn = document.getElementById('clickPhotoBtn');
+    const previewContainer = document.getElementById('previewContainer');
+    const previewImage = document.getElementById('previewImage');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const uploadNewBtn = document.getElementById('uploadNewBtn');
+    const cameraContainer = document.getElementById('cameraContainer');
+    const cameraPreview = document.getElementById('cameraPreview');
+    const captureBtn = document.getElementById('captureBtn');
+    const cancelCameraBtn = document.getElementById('cancelCameraBtn');
+    const loadingContainer = document.getElementById('loadingContainer');
+    const errorMessage = document.getElementById('errorMessage');
+    const errorText = document.getElementById('errorText');
+    const resultSection = document.getElementById('resultSection');
+    
+    // Result elements
+    const diseaseName = document.getElementById('diseaseName');
+    const confidenceValue = document.getElementById('confidenceValue');
+    const confidenceFill = document.getElementById('confidenceFill');
+    const symptoms = document.getElementById('symptoms');
+    const organicCure = document.getElementById('organicCure');
+    const preventionTips = document.getElementById('preventionTips');
+    const seasonalRisk = document.getElementById('seasonalRisk');
+
+    // Store the selected file and camera stream
+    let selectedFile = null;
+    let cameraStream = null;
+
+    // Handle file selection via button
+    selectFileBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        fileInput.click();
+    });
+    
+    // Handle click on upload container (excluding buttons)
+    uploadContainer.addEventListener('click', function(e) {
+        if (e.target === selectFileBtn || e.target === clickPhotoBtn) return;
+        fileInput.click();
+    });
+    
+    // Handle drag and drop
+    uploadContainer.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadContainer.style.borderColor = '#4CAF50';
+        uploadContainer.style.backgroundColor = 'rgba(76, 175, 80, 0.05)';
+    });
+    
+    uploadContainer.addEventListener('dragleave', function() {
+        uploadContainer.style.borderColor = '#8BC34A';
+        uploadContainer.style.backgroundColor = 'transparent';
+    });
+    
+    uploadContainer.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadContainer.style.borderColor = '#8BC34A';
+        uploadContainer.style.backgroundColor = 'transparent';
+        
+        const file = e.dataTransfer.files[0];
+        if (file && isValidImage(file)) {
+            selectedFile = file;
+            processFile(file);
+        } else {
+            showError('Please select a valid image file (JPG, JPEG, PNG).');
+        }
+    });
+    
+    // Handle file input change
+    fileInput.addEventListener('change', function() {
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            if (isValidImage(file)) {
+                selectedFile = file;
+                processFile(file);
+            } else {
+                showError('Please select a valid image file (JPG, JPEG, PNG).');
+            }
+        }
+    });
+
+    // Handle click photo button
+    clickPhotoBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        startCamera();
+    });
+
+    // Analyze button click
+    analyzeBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        analyzeImage();
+    });
+
+    // Upload New Image button click
+    uploadNewBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        uploadNewImage();
+    });
+
+    // Capture button click
+    captureBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        capturePhoto();
+    });
+
+    // Cancel camera button click
+    cancelCameraBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        stopCamera();
+    });
+
+    // Helper functions
+    function isValidImage(file) {
+        const acceptedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+        const maxSize = 16 * 1024 * 1024; // 16MB in bytes
+        return acceptedTypes.includes(file.type) && file.size <= maxSize;
+    }
+
+    function processFile(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImage.src = e.target.result;
+            previewContainer.style.display = 'block';
+            uploadContainer.style.display = 'none';
+            cameraContainer.style.display = 'none';
+            errorMessage.style.display = 'none';
+            resultSection.style.display = 'none';
+            console.log('File selected:', file.name);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function showError(message) {
+        errorText.textContent = message;
+        errorMessage.style.display = 'block';
+        loadingContainer.style.display = 'none';
+        resultSection.style.display = 'none';
+        cameraContainer.style.display = 'none';
+    }
+
+    function uploadNewImage() {
+        fileInput.value = '';
+        selectedFile = null;
+        previewContainer.style.display = 'none';
+        uploadContainer.style.display = 'block';
+        resultSection.style.display = 'none';
+        errorMessage.style.display = 'none';
+        loadingContainer.style.display = 'none';
+        previewImage.src = '';
+        stopCamera(); // Ensure camera is stopped if active
+    }
+
+    function startCamera() {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function(stream) {
+                    cameraStream = stream;
+                    cameraPreview.srcObject = stream;
+                    cameraContainer.style.display = 'block';
+                    uploadContainer.style.display = 'none';
+                    previewContainer.style.display = 'none';
+                    resultSection.style.display = 'none';
+                    errorMessage.style.display = 'none';
+                })
+                .catch(function(error) {
+                    console.error('Camera error:', error);
+                    showError('Unable to access camera. Please allow camera access or upload an image instead.');
+                });
+        } else {
+            showError('Camera not supported by your browser.');
+        }
+    }
+
+    function stopCamera() {
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+            cameraStream = null;
+            cameraPreview.srcObject = null;
+        }
+        cameraContainer.style.display = 'none';
+        uploadContainer.style.display = 'block';
+    }
+
+    function capturePhoto() {
+        const canvas = document.createElement('canvas');
+        canvas.width = cameraPreview.videoWidth;
+        canvas.height = cameraPreview.videoHeight;
+        const context = canvas.getContext('2d');
+        context.drawImage(cameraPreview, 0, 0, canvas.width, canvas.height);
+        
+        canvas.toBlob(function(blob) {
+            selectedFile = new File([blob], 'captured-photo.jpg', { type: 'image/jpeg' });
+            processFile(selectedFile);
+            stopCamera();
+        }, 'image/jpeg');
+    }
+
+    function analyzeImage() {
+        if (!selectedFile) {
+            showError('Please select or capture an image first');
+            return;
+        }
+
+        loadingContainer.style.display = 'block';
+        resultSection.style.display = 'none';
+        errorMessage.style.display = 'none';
+
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+
+        console.log('Analyzing file:', selectedFile.name);
+
+        fetch('/upload', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                const result = data.result;
+                const confidencePercent = Math.round(result.confidence * 100);
+
+                // Update UI with results
+                diseaseName.textContent = result.disease_name;
+                confidenceValue.textContent = confidencePercent;
+                confidenceFill.style.width = `${confidencePercent}%`;
+                symptoms.textContent = result.symptoms;
+                organicCure.textContent = result.organic_cure;
+                preventionTips.textContent = result.prevention_tips;
+                seasonalRisk.textContent = result.seasonal_risk;
+
+                loadingContainer.style.display = 'none';
+                resultSection.style.display = 'block';
+            } else {
+                showError(data.error || 'Analysis failed. Please try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            showError('An error occurred while analyzing the image.');
+        });
+    }
+});
+</script>
+</body>
+</html>
