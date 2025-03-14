@@ -1,0 +1,6 @@
+Flask # or your version
+tensorflow  # or your version
+numpy  # or your version
+Pillow  # or your version
+werkzeug  # or your version
+gunicorn  # for production server
